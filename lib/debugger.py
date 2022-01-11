@@ -1,11 +1,13 @@
 from tensorflow.keras.models import load_model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Input
+from tensorflow.keras import models
 
 import cv2
 import numpy as np
 
 from lib.utils import show_image
+from matplotlib import pyplot as plt
 
 
 class Debugger:
@@ -14,8 +16,8 @@ class Debugger:
         self._init_input_layer()
 
 
-    def load_model_with_index(self, from_, to):
-        self.current_model = self._generate_model_with_index(from_ = from_, to = to)
+    def load_model_with_index(self, to):
+        self._generate_model_with_index(to = to)
 
 
     def _init_input_layer(self):
@@ -28,19 +30,10 @@ class Debugger:
     def _get_layer(self, index):
         return self.model.get_layer(index = index)
 
-    def _generate_model_with_index(self, from_, to):
-        new_model = Sequential()
-        new_model.add(self.input_layer)
+    def _generate_model_with_index(self, to):
+        layer_outputs = [layer.output for layer in self.model.layers[:to]]
+        self.current_model = models.Model(inputs = self.model.input, outputs = layer_outputs)
 
-
-        for i in range(to):
-            if i == 0:
-                continue
-
-            current_layer = self.model.get_layer(index = i)
-            new_model.add(current_layer)
-
-        return new_model
 
     def _process_image(self, image_path):
         image = cv2.imread(image_path)
@@ -82,6 +75,8 @@ class Debugger:
 
     def run_on(self, image_path):
 
+        self.model.summary()
+
         if self.current_model is None:
             raise RuntimeError("Current model is not set yet.")
 
@@ -90,6 +85,12 @@ class Debugger:
         image = self._process_image(image_path = image_path)
         result = self.current_model.predict(image)
 
-        result = self._resize_result(result = result[0])
+        layer = result[len(result) - 1]
 
-        show_image(image = result)
+        plt.matshow(layer[0, :, :, 4], cmap = "viridis")
+        plt.show()
+
+
+
+
+
