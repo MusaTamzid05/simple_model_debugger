@@ -1,5 +1,6 @@
 from tensorflow import keras
 import os
+from lib.debugger import SimpleDebugger
 
 class ImageDebuggerCallback(keras.callbacks.Callback):
 
@@ -15,5 +16,11 @@ class ImageDebuggerCallback(keras.callbacks.Callback):
 
     def on_epoch_end(self, epochs, logs = None):
         print("\nThis is epoch end.")
-        print(self.image.shape)
+
+        save_dir_path  = os.path.join(self.save_dir_path, str(epochs))
+
+        debugger = SimpleDebugger(model = self.model)
+        debugger.debug_whole_model(image = self.image, save_dir_path = save_dir_path)
+        print(f"\nDebug image saved in {save_dir_path}")
+
 

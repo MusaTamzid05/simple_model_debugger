@@ -148,6 +148,4 @@ class SimpleDebugger:
 
 
         results = self.current_model.predict(image)
-
-
         self._save_whole_result(results = results, save_dir_path = save_dir_path)
