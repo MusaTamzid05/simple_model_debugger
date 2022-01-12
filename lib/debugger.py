@@ -107,6 +107,9 @@ class SimpleDebugger:
         if os.path.isdir(save_dir_path) == False:
             os.mkdir(save_dir_path)
 
+        minimum_channel = 4
+        required_shape = 4
+
         for index, result in enumerate(results):
             plt.clf()
             layer_name = self.current_model.layers[index].name
@@ -114,14 +117,19 @@ class SimpleDebugger:
             image_name = f"{index}_{layer_name}.jpg"
 
 
-            try:
-                plt.matshow(result_image[0, :, :, 4], cmap = "viridis")
-                image_path = os.path.join(save_dir_path, image_name)
-                plt.savefig(image_path)
+            if len(result_image.shape) != required_shape:
+                print(f"Avoding {image_name} because of incompatible shape")
+                continue
 
-            except IndexError as e:
-                print(e)
-                print(f"Could not save {image_name}")
+            if result_image.shape[3] > minimum_channel:
+                index = 4
+            else:
+                index = 0
+
+            plt.matshow(result_image[0, :, :, index], cmap = "viridis")
+            image_path = os.path.join(save_dir_path, image_name)
+            plt.savefig(image_path)
+
 
 
 
