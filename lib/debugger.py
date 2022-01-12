@@ -19,19 +19,11 @@ class SimpleDebugger:
         else:
             self.model = model
 
-        self._init_input_layer()
+        self.input_shape = self.model.input.shape
 
 
     def load_model_with_index(self, to):
         self._generate_model_with_index(to = to)
-
-
-    def _init_input_layer(self):
-        self.input_layer = self._get_layer(index = 0)
-        input_shape = self.input_layer.input_shape[0]
-        self.size = input_shape[1], input_shape[2]
-        self.channel = input_shape[3]
-
 
     def _get_layer(self, index):
         return self.model.get_layer(index = index)
@@ -47,7 +39,9 @@ class SimpleDebugger:
         if image is None:
             raise RuntimeError(f"{image_path} does not exist")
 
-        if self.channel == 1:
+        image_channel = self.input_shape[3]
+
+        if image_channel == 1:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         return image
@@ -59,7 +53,7 @@ class SimpleDebugger:
         if type(image) == str:
             image = self._load_image_for_process(image_path = image)
 
-        image = cv2.resize(image, (self.size[0], self.size[1]))
+        image = cv2.resize(image, (self.input_shape[1], self.input_shape[2]))
         image = np.expand_dims(image, -1)
         image = np.expand_dims(image, 0)
 
