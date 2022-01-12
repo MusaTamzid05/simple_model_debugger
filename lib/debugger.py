@@ -4,13 +4,14 @@ from tensorflow.keras.layers import Input
 from tensorflow.keras import models
 
 import cv2
+import os
 import numpy as np
 
 from lib.utils import show_image
 from matplotlib import pyplot as plt
 
 
-class Debugger:
+class SimpleDebugger:
     def __init__(self, model_path):
         self.model = load_model(model_path)
         self._init_input_layer()
@@ -92,8 +93,46 @@ class Debugger:
 
         if save_path is not None:
             plt.savefig(save_path)
+
         plt.show()
 
+
+    def _load_whole_model(self):
+        total_layers = len(self.model.layers)
+        self._generate_model_with_index(to = total_layers )
+        self.current_model.summary()
+
+
+    def _save_whole_result(self, results, save_dir_path):
+        if os.path.isdir(save_dir_path) == False:
+            os.mkdir(save_dir_path)
+
+        for index, result in enumerate(results):
+            plt.clf()
+            layer_name = self.current_model.layers[index].name
+            result_image = results[index]
+            image_name = f"{index}_{layer_name}.jpg"
+
+
+            try:
+                plt.matshow(result_image[0, :, :, 4], cmap = "viridis")
+                image_path = os.path.join(save_dir_path, image_name)
+                plt.savefig(image_path)
+
+            except IndexError as e:
+                print(e)
+                print(f"Could not save {image_name}")
+
+
+
+
+    def debug_whole_model(self, image_path, save_dir_path):
+        self._load_whole_model()
+        image = self._process_image(image_path = image_path)
+        results = self.current_model.predict(image)
+
+
+        self._save_whole_result(results = results, save_dir_path = save_dir_path)
 
 
 
