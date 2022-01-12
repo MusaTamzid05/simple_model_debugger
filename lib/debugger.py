@@ -73,7 +73,7 @@ class Debugger:
         return result
 
 
-    def run_on(self, image_path):
+    def run_on(self, image_path, save_path = None):
 
         self.model.summary()
 
@@ -88,6 +88,10 @@ class Debugger:
         layer = result[len(result) - 1]
 
         plt.matshow(layer[0, :, :, 4], cmap = "viridis")
+
+
+        if save_path is not None:
+            plt.savefig(save_path)
         plt.show()
 
 
