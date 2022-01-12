@@ -12,8 +12,13 @@ from matplotlib import pyplot as plt
 
 
 class SimpleDebugger:
-    def __init__(self, model_path):
-        self.model = load_model(model_path)
+    def __init__(self, model):
+
+        if type(model) == str:
+            self.model = load_model(model)
+        else:
+            self.model = model
+
         self._init_input_layer()
 
 
@@ -36,7 +41,7 @@ class SimpleDebugger:
         self.current_model = models.Model(inputs = self.model.input, outputs = layer_outputs)
 
 
-    def _process_image(self, image_path):
+    def _load_image_for_process(self, image_path):
         image = cv2.imread(image_path)
 
         if image is None:
@@ -44,6 +49,15 @@ class SimpleDebugger:
 
         if self.channel == 1:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        return image
+
+
+
+    def _process_image(self, image):
+
+        if type(image) == str:
+            image = self._load_image_for_process(image_path = image)
 
         image = cv2.resize(image, (self.size[0], self.size[1]))
         image = np.expand_dims(image, -1)
@@ -134,14 +148,12 @@ class SimpleDebugger:
 
 
 
-    def debug_whole_model(self, image_path, save_dir_path):
+    def debug_whole_model(self, image, save_dir_path):
         self._load_whole_model()
-        image = self._process_image(image_path = image_path)
+        image = self._process_image(image = image)
+
+
         results = self.current_model.predict(image)
 
 
         self._save_whole_result(results = results, save_dir_path = save_dir_path)
-
-
-
-
