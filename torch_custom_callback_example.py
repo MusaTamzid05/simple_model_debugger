@@ -2,13 +2,27 @@ from torch.utils.data import Dataset
 import os
 import gzip
 import numpy as np
+from torchvision import transforms
+
+class Normalize:
+    def __call__(self, image):
+        image = image.astype("float32") / 255.0
+        return image
+
+class ToTensor:
+    def __call__(self, image):
+        image = np.expand_dims(image, axis = -1)
+        image = image.transpose((2, 0, 1))
+
+        return image
+
 
 def read_gzip(data_path):
     with open(data_path, "rb") as f:
         content = f.read()
 
-
     return content
+
 
 class MnistDataset(Dataset):
     def __init__(self, dir_path , validation_type = False):
@@ -19,6 +33,8 @@ class MnistDataset(Dataset):
 
         print(self.x.shape)
         print(self.y.shape)
+
+        self.transforms = transforms.Compose([Normalize(), ToTensor()])
 
 
 
@@ -42,13 +58,13 @@ class MnistDataset(Dataset):
         return len(self.x)
 
     def __getitem__(self, idx):
-        sample = { "image" : self.x[idx], "label" : self.y[idx] }
+        sample = { "image" : self.transforms(self.x[idx]), "label" : self.y[idx] }
         return sample
 
 if __name__ == "__main__":
     dataset = MnistDataset(dir_path = "./datasets/mnist", validation_type = True)
-    dataset = MnistDataset(dir_path = "./datasets/mnist")
 
     for index in range(len(dataset)):
         sample = dataset[index]
-        print(sample)
+        #print(sample["image"].shape, sample["label"].shape)
+        print(type(sample["label"]))
