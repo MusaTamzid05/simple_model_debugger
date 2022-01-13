@@ -37,6 +37,18 @@ class MnistDataset(Dataset):
         with gzip.open(os.path.join(dir_path, "train-images-idx3-ubyte.gz"), "rb") as f:
             self.x = np.frombuffer(f.read(), np.uint8, offset = 16).reshape(len(self.y), 28, 28)
 
+
+    def __len__(self):
+        return len(self.x)
+
+    def __getitem__(self, idx):
+        sample = { "image" : self.x[idx], "label" : self.y[idx] }
+        return sample
+
 if __name__ == "__main__":
     dataset = MnistDataset(dir_path = "./datasets/mnist", validation_type = True)
     dataset = MnistDataset(dir_path = "./datasets/mnist")
+
+    for index in range(len(dataset)):
+        sample = dataset[index]
+        print(sample)
